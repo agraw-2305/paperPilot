@@ -1,3 +1,9 @@
-def generate_answer(prompt: str) -> str:
-    # Placeholder: integrate Gemini/OpenAI logic here later
-    return "AI engine not implemented yet."
+def analyze_form_text(text: str) -> dict:
+    """
+    Placeholder for AI-based analysis.
+    Later this will call Gemini / OpenAI.
+    """
+    return {
+        "summary": "AI analysis coming soon",
+        "detected_questions": [],
+    }

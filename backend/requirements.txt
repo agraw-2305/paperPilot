@@ -1,5 +1,4 @@
 fastapi
-uvicorn[standard]
+uvicorn
 python-multipart
-pypdf
-openai
+pymupdf
