@@ -1,11 +1,18 @@
 import re
 
 KEYWORDS = [
-    "name", "date of birth", "dob", "pan", "aadhaar",
-    "income", "occupation", "address", "branch",
-    "signature", "account", "phone", "mobile",
-    "email", "roll", "class", "exam", "percentage",
-    "course", "category", "passport", "certificate"
+    "name", "first name", "last name", "middle name", "initial",
+    "date of birth", "dob", "age", "sex", "gender", "citizenship",
+    "nationality", "country", "state", "city", "zip", "pin", "postal",
+    "income", "occupation", "employer", "designation",
+    "address", "signature", "date", "place",
+    "account", "branch", "ifsc", "routing", "swift",
+    "phone", "mobile", "telephone", "fax", "email",
+    "passport", "pan", "aadhaar", "id", "license",
+    "specialty", "certification", "references",
+    "card number", "expiry", "expiration", "authorized signature",
+    "application fee", "check enclosed",
+    "roll", "class", "exam", "percentage", "course", "category", "certificate"
 ]
 
 IGNORE_PHRASES = [
@@ -29,6 +36,13 @@ def detect_fields(text: str) -> list[str]:
         # Label-like lines
         if line.endswith(":") and len(line) < 60:
             fields.add(line.rstrip(":"))
+
+        # Common form layout: labels followed by underline blanks (____)
+        if "_" in line and len(line) < 140:
+            for m in re.finditer(r"([A-Za-z][A-Za-z0-9 ,/()'\-]{1,50})\s*_+", line):
+                candidate = m.group(1).strip().strip(",")
+                if 2 <= len(candidate) <= 60:
+                    fields.add(candidate)
 
         # Keyword-based detection
         for kw in KEYWORDS:

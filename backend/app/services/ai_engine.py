@@ -2,7 +2,7 @@ from typing import List, Dict, Optional
 
 from backend.app.services.field_detector import detect_fields
 from backend.app.services.info_intent import classify_field
-from backend.app.services.companion_steps import get_reason
+from backend.app.services.companion_steps import get_reason, explain_step, generate_draft_for_field
 
 
 def infer_overview(text: str) -> str:
@@ -90,6 +90,37 @@ def determine_required(intent: str, context: Optional[Dict] = None) -> bool:
     return False
 
 
+def suggest_answer_for_field(field: str) -> str:
+    lower = field.lower()
+    if any(k in lower for k in ["reason", "purpose", "declaration", "undertaking", "statement"]):
+        return generate_draft_for_field(field)
+    if "full name" in lower or ("name" in lower and "father" not in lower and "mother" not in lower):
+        return "John A. Doe"
+    if "father" in lower and "name" in lower:
+        return "Robert Doe"
+    if "mother" in lower and "name" in lower:
+        return "Mary Doe"
+    if "date" in lower or "dob" in lower:
+        return "DD/MM/YYYY"
+    if "email" in lower:
+        return "name@example.com"
+    if "mobile" in lower or "phone" in lower:
+        return "9876543210"
+    if "address" in lower:
+        return "House/Flat, Street, Area, City, State, PIN"
+    if "passport" in lower:
+        return "A1234567"
+    if "pan" in lower:
+        return "ABCDE1234F"
+    if "aadhaar" in lower:
+        return "123456789012"
+    if "year" in lower:
+        return "YYYY"
+    if "percentage" in lower or "percent" in lower:
+        return "0-100"
+    return f"Suggested: Enter {field} exactly as per your official documents."
+
+
 def extract_action_steps(text: str, context_questions: Optional[Dict] = None) -> Dict:
     """
     Convert extracted form text into structured action steps.
@@ -146,8 +177,16 @@ def extract_action_steps(text: str, context_questions: Optional[Dict] = None) ->
             return "Fill this as shown in your official documents."
 
         fields_with_tips = [
-            {"label": f, "tip": field_tip(f)} for f in intent_fields
+            {"label": f, "tip": field_tip(f), "suggested_answer": suggest_answer_for_field(f)}
+            for f in intent_fields
         ]
+
+        companion = explain_step({"title": intent, "fields": intent_fields})
+        companion_text = (
+            f"{companion.get('why', get_reason(intent))} "
+            f"{companion.get('what_good_looks_like', '')} "
+            f"{companion.get('if_skipped', '')}"
+        ).strip()
 
         steps.append({
             "id": step_id,
@@ -158,7 +197,7 @@ def extract_action_steps(text: str, context_questions: Optional[Dict] = None) ->
             "remediation_tip": remediation_tip,
             "what_to_do": what_to_do,
             "fields": fields_with_tips,
-            "companion": f"I'm here to help! If you get stuck, just check the tip for each field. Double-check your info to avoid delays or rejections."
+            "companion": companion_text
         })
         step_id += 1
 

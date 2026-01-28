@@ -26,7 +26,7 @@ def validate_pdf(file: UploadFile):
         raise HTTPException(status_code=400, detail="No file uploaded")
 
     if Path(file.filename).suffix.lower() not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        raise HTTPException(status_code=400, detail="Only PDF, PNG/JPG images, or DOCX files are allowed")
 
 
 @router.post("/analyze")

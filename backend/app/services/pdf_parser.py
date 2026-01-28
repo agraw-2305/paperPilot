@@ -1,10 +1,19 @@
 from pathlib import Path
 import fitz  # PyMuPDF
-import easyocr
+import io
+import numpy as np
 from PIL import Image
 from docx import Document
 
-ocr_reader = easyocr.Reader(["en"], gpu=False)
+_ocr_reader = None
+
+def get_ocr_reader():
+    global _ocr_reader
+    if _ocr_reader is None:
+        # Import here to avoid importing torch/easyocr at process start
+        import easyocr  # type: ignore
+        _ocr_reader = easyocr.Reader(["en"], gpu=False)
+    return _ocr_reader
 
 
 def extract_text_from_document(file_path: Path) -> dict:
@@ -44,16 +53,16 @@ def extract_from_pdf(pdf_path: Path) -> dict:
 
     with fitz.open(pdf_path) as doc:
         for page in doc:
-            pix = page.get_pixmap(dpi=200)
-            image_path = pdf_path.with_suffix(".png")
-            pix.save(image_path)
+            # Slightly lower DPI is usually enough for forms and improves latency
+            pix = page.get_pixmap(dpi=160)
+            img_bytes = pix.tobytes("png")
+            img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+            img_np = np.array(img)
 
-            result = ocr_reader.readtext(str(image_path))
+            result = get_ocr_reader().readtext(img_np)
             for (_, text, conf) in result:
                 if conf > 0.5 or len(text) < 40:
                     ocr_text.append(text.strip())
-
-            image_path.unlink(missing_ok=True)
 
     return {
         "text": "\n".join(ocr_text),
@@ -64,9 +73,10 @@ def extract_from_pdf(pdf_path: Path) -> dict:
 # ---------- IMAGE ----------
 
 def extract_from_image(image_path: Path) -> dict:
-    Image.open(image_path).convert("RGB")
+    img = Image.open(image_path).convert("RGB")
+    img_np = np.array(img)
 
-    result = ocr_reader.readtext(str(image_path))
+    result = get_ocr_reader().readtext(img_np)
     text_blocks = []
 
     for (_, text, conf) in result:
