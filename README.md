@@ -255,7 +255,18 @@ From the project root:
    ```
 
 3. **Verify the backend is running:**
-   Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
+  - Open the FastAPI server root: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+  - Open the interactive API docs (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+  - Open the OpenAPI JSON: [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json)
+
+---
+
+## Quick Links (Local Development)
+
+- **Backend (FastAPI root):** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+- **Swagger UI (API docs):** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **OpenAPI JSON:** [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json)
+- **Frontend (Next.js app):** [http://localhost:3000](http://localhost:3000)
 
 ### Frontend Setup
 
