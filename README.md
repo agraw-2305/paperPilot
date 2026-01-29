@@ -1,194 +1,303 @@
+
 # PaperPilot
 
-PaperPilot is a **local-first paperwork assistant** that turns complex forms (PDF / image / DOCX) into **clear, actionable steps** with guidance, risk flags, and safe draft suggestions.
+PaperPilot is a **local-first paperwork assistant** that transforms complex forms (PDF, image, DOCX) into clear, actionable steps. It guides users through form completion with risk flags, professional suggestions, and safe draft templates—without ever sending your data to the cloud.
 
-It is designed for **clarity, accuracy, and privacy**:
-- **Not** a PDF summarizer
-- **Not** a chatbot
-- **Yes**: a decision & action guide that helps you complete a form correctly
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [How It Works](#how-it-works)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [Configuration](#configuration)
+- [API Reference](#api-reference)
+- [Troubleshooting](#troubleshooting)
+- [Limitations](#limitations)
+- [License](#license)
+
+- [Motivation & Use Cases](#motivation--use-cases)
+- [Security & Privacy](#security--privacy)
+- [Extensibility](#extensibility)
+- [Contributing](#contributing)
+
+---
+
+## Overview
+
+PaperPilot is designed for users who need to fill out official forms accurately and efficiently, with a focus on privacy and clarity. Unlike generic PDF tools or chatbots, PaperPilot provides a step-by-step guide tailored to each document, highlighting risks and offering professional, context-aware suggestions.
+
+---
+
+## Motivation & Use Cases
+
+Filling out paperwork is often stressful, error-prone, and time-consuming—especially for:
+- Government, legal, or financial forms
+- Healthcare and insurance paperwork
+- School, university, or job application forms
+- Any process where mistakes can cause delays or rejections
+
+**PaperPilot** was created to:
+- Help users avoid common mistakes and omissions
+- Provide clear explanations for each field and requirement
+- Offer safe, professional draft answers (never fake data)
+- Make paperwork accessible for non-experts and those with accessibility needs
+
+**Example Use Cases:**
+- Preparing a visa or immigration application
+- Completing tax or benefits forms
+- Filling out medical intake or consent forms
+- Onboarding for a new job or service
+
+**What PaperPilot is NOT:**
+- Not a generic PDF summarizer
+- Not a chatbot or conversational agent
+
+**What PaperPilot IS:**
+- A decision and action guide for completing forms correctly, with privacy and accuracy as top priorities
+
+---
+
+## Security & Privacy
+
+- **Local-first:** All document processing happens on your machine. No files or data are sent to external servers or third parties.
+- **No cloud storage:** Uploaded documents and extracted data are never uploaded or stored remotely.
+- **Safe suggestions:** Draft answers are generated using templates and never use or leak real personal data.
+- **Open source:** You can audit, modify, or self-host the code for maximum trust.
+
+---
+
+## Extensibility
+
+PaperPilot is designed to be modular and extensible:
+- **Backend:** Add new extraction methods, field heuristics, or document types by extending the FastAPI services.
+- **Frontend:** Easily customize the UI, add new step types, or integrate with other tools.
+- **Integrations:** The API can be extended to support e-signature, cloud storage, or workflow automation if needed.
+
+---
+
+## Contributing
+
+Contributions are welcome! To get started:
+1. Fork the repository and clone it locally.
+2. Set up your development environment (see Getting Started).
+3. Create a new branch for your feature or bugfix.
+4. Submit a pull request with a clear description of your changes.
+
+**Ideas for contribution:**
+- Add support for new document types (e.g., XLSX, HTML forms)
+- Improve OCR accuracy or add language support
+- Enhance accessibility or UI/UX
+- Add more professional draft templates
+- Write tests or improve documentation
 
 ---
 
 ## Key Features
 
-- **Upload and analyze documents**
-  - Supported: `.pdf`, `.png`, `.jpg`, `.jpeg`, `.docx`
-  - Extraction methods: PDF text layer, OCR (EasyOCR), or AcroForm fillable field detection
+- **Document Upload & Analysis**
+  - Supports `.pdf`, `.png`, `.jpg`, `.jpeg`, `.docx`
+  - Extracts text using PDF text layers, OCR (EasyOCR), or AcroForm field detection
 
-- **Action-step checklist**
-  - Steps are grouped by intent (identity, address, verification, declarations, etc.)
+- **Actionable Step Checklist**
+  - Breaks down forms into grouped steps (identity, address, verification, etc.)
   - Each step includes:
-    - Risk level (`low` / `medium` / `high`)
-    - Risk reason + remediation tip
-    - Companion explanation
+    - Risk level (`low`, `medium`, `high`)
+    - Risk reason and remediation tips
+    - Companion explanations for context
 
-- **Fillable vs informational separation (after upload)**
-  - Fillable inputs are shown in the main “Fill these fields” column
-  - “Theory” content (terms/conditions/declarations/instructions) is shown in a separate “Info & Guidance” column
+- **Separation of Fillable vs Informational Content**
+  - Fillable fields are clearly separated from informational content (terms, instructions, etc.)
 
-- **Guide Draft suggestions (safe templates)**
-  - Professional templates (DOB format, address structure, income numeric guidance, etc.)
-  - Avoids fake personal data
-  - Choice fields (e.g., Gender) use controlled options
+- **Guide Draft Suggestions**
+  - Provides safe, professional templates for common fields (e.g., date of birth, address)
+  - Avoids generating fake personal data
+  - Controlled options for choice fields
 
-- **Progress + completion indicators**
-  - Mark steps as done / skipped
-  - Review mode to see all steps
+- **Progress Tracking**
+  - Mark steps as done or skipped
+  - Review mode to see all steps at a glance
 
-- **Download filled PDF (AcroForm PDFs)**
-  - If your PDF contains fillable form fields (AcroForm widgets), PaperPilot can fill them and export a downloadable PDF.
-  - Optional signature image placement on a detected signature field.
+- **PDF Export**
+  - For AcroForm PDFs, fills fields and allows download of the completed document
+  - Optional signature image placement
+
+---
+
+## How It Works
+
+1. **Upload** a document via the web UI.
+2. The **frontend** sends the file to the backend (`/upload/analyze`).
+3. The **backend** extracts text and detects form fields.
+4. Extracted content is converted into a structured checklist of steps.
+5. The **frontend** displays these steps, guiding the user through completion.
+6. For fillable PDFs, users can export a filled version via `/upload/fill`.
 
 ---
 
 ## Tech Stack
 
-### Frontend
-- **Next.js (App Router)**
-- **React**
-- **TypeScript**
-- **Tailwind CSS** + Radix UI components
+**Frontend:**
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- Radix UI components
 
-### Backend
-- **FastAPI**
-- **Uvicorn**
-- **PyMuPDF** (`pymupdf`) for PDF parsing + filling
-- **EasyOCR** for OCR fallback
-- **python-docx** for DOCX extraction
-- **Pillow** + **NumPy** for image handling
-
----
-
-## Architecture Overview
-
-### High-level flow
-1. You upload a document in the UI.
-2. The frontend sends it to the backend: `POST /upload/analyze`.
-3. The backend extracts text or detects PDF form fields.
-4. The backend converts the extracted content into a structured set of steps.
-5. The frontend renders steps in the **FormProcessor** (after-upload) UI.
-6. Optionally, you can export a filled PDF via `POST /upload/fill`.
-
-### Where the main logic lives
-
-**Backend**
-- `backend/app/routes/upload.py`
-  - `/upload/analyze`: analyze document and return structured steps
-  - `/upload/fill`: fill AcroForm PDFs with user-entered values and return a filled PDF
-- `backend/app/services/pdf_parser.py`
-  - Extract text from PDFs/images/DOCX
-  - Detect AcroForm fields when available
-- `backend/app/services/field_detector.py`
-  - Detects field labels from extracted text
-  - Includes heuristics to reduce OCR artifacts (e.g., value-heavy lines)
-- `backend/app/utils/text_cleaner.py`
-  - Cleans extracted OCR/text layer output (reduces common OCR artifacts)
-
-**Frontend**
-- `frontend/app/page.tsx`
-  - Landing + upload flow and routing into the after-upload experience
-- `frontend/components/form-processor.tsx`
-  - Main after-upload UI: steps, guidance, indicators, and fill/export actions
+**Backend:**
+- FastAPI (Python)
+- Uvicorn (ASGI server)
+- PyMuPDF (`pymupdf`) for PDF parsing and filling
+- EasyOCR for OCR extraction
+- python-docx for DOCX parsing
+- Pillow & NumPy for image processing
 
 ---
 
-## Getting Started (Local Development)
+## Project Structure
+
+Below is the up-to-date file structure for the project, showing the main directories and key files:
+
+```text
+paperPilot/
+│
+├── README.md
+├── backend/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   └── schema.py
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   └── upload.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── ai_engine.py
+│   │   │   ├── answer_validator.py
+│   │   │   ├── companion_steps.py
+│   │   │   ├── eligibility.py
+│   │   │   ├── field_detector.py
+│   │   │   ├── info_intent.py
+│   │   │   ├── pdf_parser.py
+│   │   │   └── ...
+│   │   ├── utils/
+│   │   │   ├── __init__.py
+│   │   │   ├── helpers.py
+│   │   │   └── text_cleaner.py
+│   │   └── ...
+│   └── uploads/
+├── frontend/
+│   ├── package.json
+│   ├── next-env.d.ts
+│   ├── next.config.mjs
+│   ├── pnpm-lock.yaml
+│   ├── postcss.config.mjs
+│   ├── tsconfig.json
+│   ├── app/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── api/
+│   │       └── analyze/
+│   │           └── route.ts
+│   ├── components/
+│   │   ├── form-processor.tsx
+│   │   ├── header.tsx
+│   │   ├── pdf-preview.tsx
+│   │   ├── professional-pdf-viewer.tsx
+│   │   ├── theme-provider.tsx
+│   │   ├── upload-card.tsx
+│   │   └── ui/
+│   │       ├── accordion.tsx
+│   │       ├── alert-dialog.tsx
+│   │       ├── ...
+│   ├── hooks/
+│   │   ├── use-mobile.ts
+│   │   └── use-toast.ts
+│   ├── lib/
+│   │   └── utils.ts
+│   └── public/
+└── ...
+```
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js** (recommended: Node 18+)
-- **Python** (recommended: Python 3.10+)
+- Node.js (v18+ recommended)
+- Python (v3.10+ recommended)
+- (Optional) Virtual environment for Python
 
-> Note: EasyOCR can be heavier to install the first time depending on your environment.
-
----
-
-## Backend Setup (FastAPI)
+### Backend Setup
 
 From the project root:
 
-1) Install dependencies
+1. **Install dependencies:**
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
 
-```bash
-pip install -r backend/requirements.txt
-```
+2. **Start the backend server:**
+   ```bash
+   python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+   ```
 
-2) Start the backend
+3. **Verify the backend is running:**
+   Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
 
-```bash
-python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
+### Frontend Setup
 
-3) Verify health
+From the `frontend` directory:
 
-Open:
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-```text
-http://127.0.0.1:8000/
-```
+2. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
 
----
-
-## Frontend Setup (Next.js)
-
-From the `frontend` folder:
-
-1) Install dependencies
-
-```bash
-npm install
-```
-
-2) Start the dev server
-
-```bash
-npm run dev
-```
-
-3) Open the app
-
-```text
-http://localhost:3000
-```
+3. **Open the app:**
+   Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Environment Variables
+## Configuration
 
-### Frontend
+### Environment Variables
 
-You can configure the backend base URL via:
-
-```bash
-NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
-```
-
-If not set, the frontend defaults to `http://127.0.0.1:8000`.
-
----
-
-## Usage
-
-1) Open the frontend.
-2) Upload a document (PDF/image/DOCX).
-3) On the after-upload page:
-   - Follow steps and fill fields in the main column
-   - Review “Info & Guidance” for terms/conditions/declarations
-   - Use **Guide Draft** to generate safe template suggestions
-   - Mark steps done / skipped
-4) On the final step (for fillable PDFs), click **Download filled PDF**.
+**Frontend:**
+- Set the backend URL (if not using the default):
+  ```bash
+  NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
+  ```
+  If not set, defaults to `http://127.0.0.1:8000`.
 
 ---
 
-## Backend API
+## API Reference
 
 ### `POST /upload/analyze`
 
-Analyzes an uploaded document and returns structured steps.
+- **Purpose:** Analyze an uploaded document and return structured steps.
+- **Request:** `multipart/form-data` with a `file` field.
+- **Response:** JSON with filename, extraction method, action overview, and a list of steps.
 
-- **Request**: `multipart/form-data` with `file`
-- **Response** (shape used by the frontend):
-
+**Example Response:**
 ```json
 {
   "filename": "example.pdf",
@@ -218,77 +327,43 @@ Analyzes an uploaded document and returns structured steps.
 
 ### `POST /upload/fill`
 
-Fills an AcroForm PDF with user-entered values.
-
-- **Request**: `multipart/form-data`
+- **Purpose:** Fill an AcroForm PDF with user-entered values.
+- **Request:** `multipart/form-data` with:
   - `file`: original PDF
-  - `data`: JSON string of `{ field_name: value }`
-  - `signature`: optional signature image
-
-- **Response**: a downloadable PDF (`FileResponse`)
-
----
-
-## Limitations / Notes
-
-- **PDF filling works best for AcroForm PDFs** (true fillable fields).
-- If the document is an image-only scan without form widgets, PaperPilot can still generate steps and guidance, but exporting a “filled PDF” would require a coordinate-based overlay system (not implemented).
-- OCR quality depends on scan clarity (resolution, skew, noise).
+  - `data`: JSON string mapping field names to values
+  - `signature`: (optional) signature image
+- **Response:** Downloadable filled PDF
 
 ---
 
 ## Troubleshooting
 
-### Backend import/module errors
-- Start uvicorn from the project root:
-  - `python -m uvicorn backend.main:app --reload`
+- **Backend import/module errors:**  
+  Always start Uvicorn from the project root:
+  ```
+  python -m uvicorn backend.main:app --reload
+  ```
 
-### OCR is slow
-- OCR can be CPU heavy. Try:
-  - Clearer scans
-  - Smaller files
+- **OCR is slow:**  
+  - Use clearer scans or smaller files for better performance.
 
-### Download filled PDF is disabled
-- The “Download filled PDF” button is enabled only when:
-  - The PDF contains **fillable fields** (AcroForm)
-  - You are on the last step
+- **Download filled PDF is disabled:**  
+  - Only enabled for AcroForm PDFs and on the last step.
 
 ---
 
-## Project Structure
+## Limitations
 
-```text
-paperPilot/
-  README.md
-  backend/
-    main.py
-    requirements.txt
-    app/
-      routes/
-        upload.py
-      services/
-        ai_engine.py
-        field_detector.py
-        pdf_parser.py
-      utils/
-        text_cleaner.py
-  frontend/
-    package.json
-    app/
-      page.tsx
-      api/
-        analyze/route.ts
-    components/
-      form-processor.tsx
-      upload-card.tsx
-```
+- PDF filling is only supported for AcroForm PDFs (with true fillable fields).
+- For image-only scans, PaperPilot generates steps and guidance, but cannot export a filled PDF (coordinate-based overlay not implemented).
+- OCR quality depends on scan clarity (resolution, skew, noise).
 
 ---
 
 ## License
 
-This project is currently provided without an explicit license. Add a license file if you plan to distribute.
+This project is currently provided without an explicit license. If you plan to distribute or use it publicly, please add a license file.
 
 ---
 
-Built for clarity, privacy, and real-world help.
+**Built for clarity, privacy, and real-world help.**
