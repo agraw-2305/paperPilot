@@ -381,3 +381,7 @@ This project is currently provided without an explicit license. If you plan to d
 ---
 
 **Built for clarity, privacy, and real-world help.**
+
+---
+
+If you like this project, please consider giving it a ⭐ on GitHub!
