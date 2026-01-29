@@ -360,6 +360,20 @@ From the `frontend` directory:
 
 ---
 
+## What's Next for PaperPilot
+
+Future improvements for PaperPilot include:
+
+- **Coordinate-based overlays** to support filled-PDF export for scanned forms
+- **Better form field classification** using layout and semantic signals
+- **Optional offline-only processing modes** for enhanced privacy
+- **Support for additional document types** and regional form formats
+- **More advanced review and validation checks** before final submission
+
+The long-term goal is to make PaperPilot a reliable companion for anyone dealing with important paperwork—helping them submit with confidence rather than uncertainty.
+
+---
+
 ## License
 
 This project is currently provided without an explicit license. If you plan to distribute or use it publicly, please add a license file.
