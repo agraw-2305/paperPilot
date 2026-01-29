@@ -4,28 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Professional Adobe Acrobat-inspired color scheme */
-  --background: #FFFFFF; /* Clean white background */
-  --foreground: #262626; /* Professional dark gray/black text */
-  --card: #F7F7F7; /* Light gray cards */
-  --card-foreground: #262626; /* Dark text on cards */
-  --popover: #FFFFFF; /* White popovers */
-  --popover-foreground: #262626; /* Dark text */
-  --primary: #0066CC; /* Adobe blue - professional accent */
-  --primary-foreground: #FFFFFF; /* White on blue */
-  --secondary: #F0F0F0; /* Subtle gray */
-  --secondary-foreground: #262626; /* Dark text */
-  --muted: #D9D9D9; /* Muted borders */
-  --muted-foreground: #666666; /* Muted text */
-  --accent: #0078D7; /* Bright accent blue */
-  --accent-foreground: #FFFFFF; /* White text */
-  --destructive: #DA3B01; /* Professional red-orange */
-  --destructive-foreground: #FFFFFF; /* White text */
-  --border: #D9D9D9; /* Professional borders */
-  --input: #FFFFFF; /* White inputs */
-  --ring: #0066CC; /* Blue focus ring */
-  --warning: #FFB900; /* Professional amber */
-  --warning-foreground: #262626; /* Dark text */
+  /* Calm paperwork SaaS palette */
+  --background: #FBFBF8;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #1E40AF;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #0F172A;
+  --muted: #E5E7EB;
+  --muted-foreground: #64748B;
+  --accent: #0F766E;
+  --accent-foreground: #FFFFFF;
+  --destructive: #B42318;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #FFFFFF;
+  --ring: #1E40AF;
+  --warning: #F59E0B;
+  --warning-foreground: #0F172A;
   --chart-1: #0078D7;
   --chart-2: #107C10;
   --chart-3: #FFB900;
@@ -127,10 +127,77 @@
   }
   body {
     @apply bg-background text-foreground;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* Unique floating shapes effect */
+  .floating-shapes {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .floating-shape {
+    position: absolute;
+    border-radius: 9999px;
+    opacity: 0.13;
+    filter: blur(2px);
+    animation: float-shape 18s ease-in-out infinite alternate;
+    will-change: transform, opacity;
+  }
+  .floating-shape-1 {
+    width: 220px; height: 120px; left: 8vw; top: 12vh;
+    background: linear-gradient(120deg, var(--primary), var(--accent));
+    animation-delay: 0s;
+  }
+  .floating-shape-2 {
+    width: 160px; height: 90px; right: 10vw; top: 30vh;
+    background: linear-gradient(120deg, var(--accent), var(--primary));
+    animation-delay: 4s;
+  }
+  .floating-shape-3 {
+    width: 120px; height: 120px; left: 20vw; bottom: 10vh;
+    background: linear-gradient(120deg, var(--secondary), var(--primary));
+    animation-delay: 8s;
+  }
+  .floating-shape-4 {
+    width: 180px; height: 80px; right: 18vw; bottom: 8vh;
+    background: linear-gradient(120deg, var(--primary), var(--secondary));
+    animation-delay: 12s;
+  }
+  @keyframes float-shape {
+    0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.13; }
+    50% { transform: translateY(-30px) scale(1.08) rotate(8deg); opacity: 0.18; }
+    100% { transform: translateY(10px) scale(0.97) rotate(-6deg); opacity: 0.13; }
   }
 }
 
 @layer utilities {
+  /* Professional animated gradient background effect */
+  .background-gradient-effect::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.18;
+    background: radial-gradient(ellipse 80% 60% at 60% 20%, var(--primary) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 20% 80%, var(--accent) 0%, transparent 80%),
+                linear-gradient(120deg, var(--secondary) 0%, var(--background) 100%);
+    animation: gradient-move 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes gradient-move {
+    0% {
+      filter: blur(0px) brightness(1);
+      transform: scale(1) translateY(0);
+    }
+    100% {
+      filter: blur(2px) brightness(1.08);
+      transform: scale(1.04) translateY(-10px);
+    }
+  }
   @keyframes slide-in {
     from {
       opacity: 0;

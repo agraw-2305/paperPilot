@@ -10,7 +10,14 @@ interface PDFViewerProps {
 }
 
 export function ProfessionalPDFViewer({ file, currentStepId }: PDFViewerProps) {
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(() => {
+    // Persist zoom level in sessionStorage
+    if (typeof window !== 'undefined') {
+      const z = window.sessionStorage.getItem('pdfZoom');
+      return z ? parseInt(z, 10) : 100;
+    }
+    return 100;
+  });
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,6 +30,12 @@ export function ProfessionalPDFViewer({ file, currentStepId }: PDFViewerProps) {
       return () => URL.revokeObjectURL(url);
     }
   }, [file]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('pdfZoom', String(zoom));
+    }
+  }, [zoom]);
 
   if (!file) {
     return (
@@ -61,21 +74,41 @@ export function ProfessionalPDFViewer({ file, currentStepId }: PDFViewerProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setZoom(Math.max(50, zoom - 10))}
+            onClick={() => setZoom(z => Math.max(25, z - 5))}
             className="h-8 w-8 p-0"
+            aria-label="Zoom out"
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
-          <span className="text-xs font-medium text-muted-foreground w-10 text-center">
+          <span className="text-xs font-medium text-muted-foreground w-14 text-center">
             {zoom}%
           </span>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setZoom(Math.min(200, zoom + 10))}
+            onClick={() => setZoom(z => Math.min(400, z + 5))}
             className="h-8 w-8 p-0"
+            aria-label="Zoom in"
           >
             <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setZoom(100)}
+            className="h-8 w-8 p-0"
+            aria-label="Fit to 100%"
+          >
+            100%
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setZoom(150)}
+            className="h-8 w-8 p-0"
+            aria-label="Fit to width"
+          >
+            Fit
           </Button>
         </div>
       </div>
@@ -89,9 +122,10 @@ export function ProfessionalPDFViewer({ file, currentStepId }: PDFViewerProps) {
           </div>
         ) : pdfUrl && isPdf ? (
           <iframe
-            src={`${pdfUrl}#zoom=${zoom}`}
+            src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1&zoom=${zoom}`}
             className="w-full h-full min-h-[70vh] rounded-lg border border-border bg-background shadow-sm"
             title="PDF Document"
+            style={{ minHeight: '70vh', width: '100%' }}
           />
         ) : pdfUrl && isImage ? (
           <div className="w-full flex justify-center">

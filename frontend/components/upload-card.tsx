@@ -3,7 +3,6 @@
 import React from "react"
 import { useState, useRef } from 'react';
 import { Upload, Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface UploadCardProps {
   onFileSelect: (file: File) => void;
@@ -20,7 +19,11 @@ export function UploadCard({ onFileSelect, isLoading }: UploadCardProps) {
   const maxSize = 10 * 1024 * 1024; // 10MB
 
   const validateFile = (file: File): boolean => {
-    if (!validTypes.includes(file.type)) {
+    const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const validExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.docx'];
+    const hasValidType = validTypes.includes(file.type);
+    const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    if (!hasValidType && !hasValidExtension) {
       setError('Invalid file type. Please upload a PDF, image, or Word document.');
       return false;
     }
@@ -70,17 +73,17 @@ export function UploadCard({ onFileSelect, isLoading }: UploadCardProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full max-w-5xl mx-auto space-y-4">
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`relative rounded-2xl border-2 border-dashed p-10 transition-all duration-300 group ${
+        className={`relative rounded-3xl bg-gradient-to-br from-card via-background to-card border-2 border-primary/30 shadow-2xl shadow-primary/20 ring-2 ring-primary/15 p-28 sm:p-32 md:p-36 transition-all duration-300 group ${
           isDragActive
-            ? 'border-primary bg-primary/5 shadow-lg scale-[1.02]'
-            : 'border-border bg-card hover:border-primary/40 hover:shadow-lg hover:bg-muted/10 hover:scale-[1.01]'
-        } ${isLoading ? 'opacity-60 pointer-events-none' : ''}`}
+            ? 'border-primary bg-primary/10 scale-[1.03] shadow-primary/30'
+            : 'hover:border-primary/70 hover:shadow-2xl hover:bg-gradient-to-br hover:from-primary/8 hover:via-background hover:to-primary/4'
+        } ${isLoading ? 'opacity-80 pointer-events-none' : ''}`}
       >
         <input
           ref={fileInputRef}
@@ -95,25 +98,25 @@ export function UploadCard({ onFileSelect, isLoading }: UploadCardProps) {
         <button
           onClick={() => !isLoading && fileInputRef.current?.click()}
           disabled={isLoading}
-          className="w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-4"
+          className="w-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-2"
         >
           <div className="flex flex-col items-center gap-5">
-            <div className="rounded-full bg-primary/10 p-5 transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/15">
+            <div className="rounded-2xl bg-primary/10 p-24 transition-all duration-300 group-hover:bg-primary/15">
               {isLoading ? (
-                <div className="h-7 w-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="h-28 w-28 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Upload className={`h-7 w-7 text-primary transition-all duration-300 ${isDragActive ? 'translate-y-[-6px]' : ''}`} strokeWidth={1.5} />
+                <Upload className={`h-28 w-28 text-primary transition-all duration-300 ${isDragActive ? 'translate-y-[-4px]' : ''}`} strokeWidth={1.5} />
               )}
             </div>
-            <div className="text-center space-y-2">
-              <h3 className="font-semibold text-foreground text-base md:text-lg">
+            <div className="text-center space-y-10">
+              <h3 className="font-bold text-foreground text-6xl md:text-7xl tracking-tight">
                 {isLoading ? 'Analyzing your form...' : 'Upload your form'}
               </h3>
-              <p className="text-sm text-muted-foreground">
-                {isLoading ? 'Please wait while we process your document' : 'Drag and drop your document here or click to browse'}
+              <p className="text-4xl font-semibold text-muted-foreground leading-relaxed">
+                {isLoading ? 'Please wait while we process your document' : 'PDF, image, or scanned documents'}
               </p>
-              <p className="text-xs text-muted-foreground/80">
-                Supports PDF, images, and Word documents (max 10MB)
+              <p className="text-3xl text-muted-foreground/80 leading-relaxed">
+                {isLoading ? 'This can take longer for scanned files' : 'Drag and drop or click to browse (max 10MB)'}
               </p>
             </div>
             {isLoading && (
@@ -133,28 +136,9 @@ export function UploadCard({ onFileSelect, isLoading }: UploadCardProps) {
       )}
 
       {/* Trust signal */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 justify-center">
-        <Lock className="h-3 w-3 text-accent" />
-        <span>Your files are secure and processed locally</span>
-      </div>
-
-      {/* Expectation-setting text */}
-      <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-transparent rounded-xl border border-primary/10 p-5 mt-6 space-y-3">
-        <p className="text-xs font-semibold text-foreground uppercase tracking-wider">What happens next:</p>
-        <ul className="text-sm text-muted-foreground space-y-2">
-          <li className="flex items-start gap-2">
-            <span className="text-accent font-bold mt-0.5">→</span>
-            <span>Analyze all form fields and extract questions</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent font-bold mt-0.5">→</span>
-            <span>Provide clear explanations for complex language</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-accent font-bold mt-0.5">→</span>
-            <span>Generate AI-drafted answers you can edit</span>
-          </li>
-        </ul>
+      <div className="flex items-center gap-4 text-xl text-muted-foreground pt-6 justify-center">
+        <Lock className="h-6 w-6 text-accent" />
+        <span>Processed locally. Your data never leaves your device.</span>
       </div>
     </div>
   );

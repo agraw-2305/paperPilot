@@ -27,6 +27,31 @@ def detect_fields(text: str) -> list[str]:
     fields = set()
     lines = [l.strip() for l in text.splitlines() if l.strip()]
 
+    def is_probably_value_line(line: str) -> bool:
+        lower = line.lower()
+        # OCR often merges label + value; if this looks like a value-heavy line, skip keyword detection.
+        if re.search(r"\b\d{3,}\b", line) and "_" not in line and not line.endswith(":"):
+            return True
+        if re.search(r"\b(rs|inr|usd|eur|gbp)\b", lower) and re.search(r"\d", line):
+            return True
+        # Too many digits relative to letters → likely a value/ID line, not a label
+        digits = sum(ch.isdigit() for ch in line)
+        letters = sum(ch.isalpha() for ch in line)
+        if digits >= 4 and letters > 0 and digits > letters:
+            return True
+        return False
+
+    def clean_label_candidate(s: str) -> str:
+        # Take only the label portion (before values) and normalize
+        s = s.strip()
+        if ":" in s:
+            s = s.split(":", 1)[0]
+        # Remove trailing numbers / amount fragments
+        s = re.sub(r"\b\d.*$", "", s).strip()
+        s = re.sub(r"[^A-Za-z0-9 /]", "", s).strip()
+        s = re.sub(r"\s{2,}", " ", s).strip()
+        return s
+
     for line in lines:
         lower = line.lower()
 
@@ -35,20 +60,25 @@ def detect_fields(text: str) -> list[str]:
 
         # Label-like lines
         if line.endswith(":") and len(line) < 60:
-            fields.add(line.rstrip(":"))
+            candidate = clean_label_candidate(line.rstrip(":"))
+            if 2 <= len(candidate) <= 60:
+                fields.add(candidate)
 
         # Common form layout: labels followed by underline blanks (____)
         if "_" in line and len(line) < 140:
             for m in re.finditer(r"([A-Za-z][A-Za-z0-9 ,/()'\-]{1,50})\s*_+", line):
                 candidate = m.group(1).strip().strip(",")
+                candidate = clean_label_candidate(candidate)
                 if 2 <= len(candidate) <= 60:
                     fields.add(candidate)
 
         # Keyword-based detection
-        for kw in KEYWORDS:
-            if kw in lower and len(line) < 80:
-                cleaned = re.sub(r"[^A-Za-z0-9 /]", "", line)
-                fields.add(cleaned.strip())
+        if not is_probably_value_line(line):
+            for kw in KEYWORDS:
+                if kw in lower and len(line) < 120:
+                    candidate = clean_label_candidate(line)
+                    if 2 <= len(candidate) <= 60:
+                        fields.add(candidate)
 
     return normalize_fields(list(fields))
 

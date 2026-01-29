@@ -33,16 +33,40 @@ def extract_text_from_document(file_path: Path) -> dict:
 
 # ---------- PDF ----------
 
+
 def extract_from_pdf(pdf_path: Path) -> dict:
+    import fitz
     text_blocks = []
-
-    with fitz.open(pdf_path) as doc:
+    fillable_fields = []
+    doc = fitz.open(pdf_path)
+    try:
+        # Try to extract AcroForm fields (fillable fields)
         for page in doc:
-            text = page.get_text().strip()
-            if text:
-                text_blocks.append(text)
+            widgets = page.widgets()
+            if widgets:
+                for w in widgets:
+                    if w.field_name:
+                        fillable_fields.append({
+                            "name": w.field_name,
+                            "type": w.field_type,
+                            "label": w.field_label or w.field_name,
+                            "rect": list(w.rect),
+                        })
+        # If no widgets, fallback to text extraction
+        if not fillable_fields:
+            for page in doc:
+                text = page.get_text().strip()
+                if text:
+                    text_blocks.append(text)
+    finally:
+        doc.close()
 
-    if text_blocks:
+    if fillable_fields:
+        return {
+            "fields": fillable_fields,
+            "method": "acroform"
+        }
+    elif text_blocks:
         return {
             "text": "\n".join(text_blocks),
             "method": "text-layer"
@@ -50,20 +74,26 @@ def extract_from_pdf(pdf_path: Path) -> dict:
 
     # OCR fallback
     ocr_text = []
-
-    with fitz.open(pdf_path) as doc:
-        for page in doc:
-            # Slightly lower DPI is usually enough for forms and improves latency
-            pix = page.get_pixmap(dpi=160)
+    doc = fitz.open(pdf_path)
+    try:
+        max_pages = min(len(doc), 2 if len(doc) > 5 else 3)
+        for page_index in range(max_pages):
+            page = doc[page_index]
+            pix = page.get_pixmap(dpi=120)
             img_bytes = pix.tobytes("png")
             img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-            img_np = np.array(img)
-
-            result = get_ocr_reader().readtext(img_np)
-            for (_, text, conf) in result:
-                if conf > 0.5 or len(text) < 40:
-                    ocr_text.append(text.strip())
-
+            try:
+                img_np = np.array(img)
+                result = get_ocr_reader().readtext(img_np)
+                for (_, text, conf) in result:
+                    if conf > 0.5 or len(text) < 40:
+                        ocr_text.append(text.strip())
+                if len(" ".join(ocr_text)) > 1500:
+                    break
+            finally:
+                img.close()
+    finally:
+        doc.close()
     return {
         "text": "\n".join(ocr_text),
         "method": "ocr-pdf"
